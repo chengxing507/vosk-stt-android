@@ -46,6 +46,6 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.activity:activity-ktx:1.8.2")
 
-    // Vosk offline STT
-    implementation("com.alphacep:vosk-android:0.3.47")
+    // Vosk offline STT (Maven Central)
+    implementation("com.alphacephei:vosk-android:0.3.47")
 }
