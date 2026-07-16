@@ -283,8 +283,7 @@ class MainActivity : AppCompatActivity(), RecognitionListener {
             }
 
             speechService = SpeechService(recognizer, 16000.0f)
-            speechService?.addListener(this)
-            speechService?.startListening()
+            speechService?.startListening(this)
 
             isListening = true
             binding.micButton.text = "停止识别"
