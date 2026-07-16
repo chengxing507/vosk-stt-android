@@ -32,6 +32,25 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
 
+      - name: Download and bundle Vosk model
+        run: |
+          echo "Downloading Vosk small English model..."
+          MODEL_DIR="app/src/main/assets/vosk-model-small-en-us-0.15"
+          mkdir -p "$MODEL_DIR"
+          curl -L --connect-timeout 30 --max-time 300 \
+            "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip" \
+            -o /tmp/model.zip
+          echo "Extracting model..."
+          unzip -q /tmp/model.zip -d /tmp/model-extract
+          # The zip contains a top-level folder; move contents
+          if [ -d "/tmp/model-extract/vosk-model-small-en-us-0.15" ]; then
+            mv /tmp/model-extract/vosk-model-small-en-us-0.15/* "$MODEL_DIR/"
+          else
+            mv /tmp/model-extract/* "$MODEL_DIR/"
+          fi
+          rm -rf /tmp/model.zip /tmp/model-extract
+          echo "Model bundled. Size: $(du -sh $MODEL_DIR | cut -f1)"
+
       - name: Build Debug APK
         run: ./gradlew assembleDebug --no-daemon
 

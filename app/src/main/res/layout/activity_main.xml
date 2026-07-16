@@ -23,14 +23,7 @@
             android:gravity="center"
             android:layout_marginBottom="8dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="完全离线运行，无需网络连接"
-            android:textSize="14sp"
-            android:textColor="@color/secondary_text"
-            android:gravity="center"
-            android:layout_marginBottom="16dp" />
+        
 
         <!-- Status indicator -->
         <com.google.android.material.card.MaterialCardView

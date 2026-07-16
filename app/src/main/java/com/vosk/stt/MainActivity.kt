@@ -17,8 +17,10 @@ import org.vosk.Model
 import org.vosk.Recognizer
 import org.vosk.android.RecognitionListener
 import org.vosk.android.SpeechService
+import org.vosk.android.StorageService
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.zip.ZipEntry
@@ -133,17 +135,43 @@ class MainActivity : AppCompatActivity(), RecognitionListener {
 
     private fun checkExistingModel() {
         val modelsDir = getModelDir()
-        if (!modelsDir.exists()) {
-            binding.statusText.text = "请下载语音模型"
-            return
+        if (modelsDir.exists()) {
+            val modelDirs = modelsDir.listFiles()?.filter { it.isDirectory }
+            if (!modelDirs.isNullOrEmpty()) {
+                loadModel(modelDirs.first().absolutePath)
+                return
+            }
         }
-        val modelDirs = modelsDir.listFiles()?.filter { it.isDirectory }
-        if (modelDirs.isNullOrEmpty()) {
-            binding.statusText.text = "请下载语音模型"
-            return
+
+        // Try bundled model from APK assets
+        val bundledModel = "vosk-model-small-en-us-0.15"
+        try {
+            assets.list(bundledModel)?.let { files ->
+                if (files.isNotEmpty()) {
+                    setStatus("正在解压内置模型…", gray = false)
+                    modelsDir.mkdirs()
+                    val targetDir = File(modelsDir, bundledModel)
+                    StorageService.unpack(this, bundledModel, targetDir.absolutePath,
+                        object : StorageService.UnpackListener {
+                            override fun onUnpackComplete(modelPath: String) {
+                                loadModel(modelPath)
+                            }
+                            override fun onUnpackFailed(e: IOException?) {
+                                runOnUiThread {
+                                    setStatus("解压失败，请手动下载: ${e?.message}", red = true)
+                                    binding.downloadSection.isVisible = true
+                                }
+                            }
+                        })
+                    return
+                }
+            }
+        } catch (_: Exception) {
+            // No bundled model in assets
         }
-        // Load the first available model
-        loadModel(modelDirs.first().absolutePath)
+
+        binding.statusText.text = "请下载语音模型"
+        binding.downloadSection.isVisible = true
     }
 
     private fun loadModel(path: String) {
@@ -155,7 +183,6 @@ class MainActivity : AppCompatActivity(), RecognitionListener {
                 runOnUiThread {
                     isModelLoaded = true
                     binding.micButton.isEnabled = true
-                    binding.downloadSection.isVisible = false
                     setStatus("✅ 模型已就绪，点击麦克风开始识别", green = true)
                     Toast.makeText(this, "模型加载成功", Toast.LENGTH_SHORT).show()
                 }
