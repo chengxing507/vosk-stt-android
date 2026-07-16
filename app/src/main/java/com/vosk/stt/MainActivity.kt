@@ -152,13 +152,19 @@ class MainActivity : AppCompatActivity(), RecognitionListener {
                     modelsDir.mkdirs()
                     val targetDir = File(modelsDir, bundledModel)
                     StorageService.unpack(this, bundledModel, targetDir.absolutePath,
-                        object : StorageService.UnpackListener {
-                            override fun onUnpackComplete(modelPath: String) {
-                                loadModel(modelPath)
-                            }
-                            override fun onUnpackFailed(e: IOException?) {
+                        object : StorageService.Callback<Model> {
+                            override fun onComplete(model: Model) {
+                                this@MainActivity.model = model
                                 runOnUiThread {
-                                    setStatus("解压失败，请手动下载: ${e?.message}", red = true)
+                                    isModelLoaded = true
+                                    binding.micButton.isEnabled = true
+                                    setStatus("✅ 模型已就绪，点击麦克风开始识别", green = true)
+                                    Toast.makeText(this@MainActivity, "内置模型加载成功", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                            override fun onError(e: Exception) {
+                                runOnUiThread {
+                                    setStatus("解压失败，请手动下载: ${e.message}", red = true)
                                     binding.downloadSection.isVisible = true
                                 }
                             }
