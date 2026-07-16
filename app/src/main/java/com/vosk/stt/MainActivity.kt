@@ -162,9 +162,11 @@ class MainActivity : AppCompatActivity(), RecognitionListener {
                                     Toast.makeText(this@MainActivity, "内置模型加载成功", Toast.LENGTH_SHORT).show()
                                 }
                             }
-                            override fun onError(e: Exception) {
+                        },
+                        object : StorageService.Callback<IOException> {
+                            override fun onComplete(exception: IOException) {
                                 runOnUiThread {
-                                    setStatus("解压失败，请手动下载: ${e.message}", red = true)
+                                    setStatus("解压失败，请手动下载: ${exception.message}", red = true)
                                     binding.downloadSection.isVisible = true
                                 }
                             }
